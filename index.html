@@ -252,13 +252,13 @@ let divMode = 'uno';
 let modalLink = null;
 
 const MIEMBROS = [
-  {nombre:'Jungkook',emoji:'🐰',tier:'1st',pct:16},
-  {nombre:'Jimin',   emoji:'🐥',tier:'2nd',pct:15},
-  {nombre:'Taehyung',emoji:'🐯',tier:'1st',pct:16},
-  {nombre:'Hoseok',  emoji:'🌞',tier:'3rd',pct:14},
+  {nombre:'Namjoon', emoji:'🐨',tier:'4th',pct:13},
   {nombre:'Jin',     emoji:'🐹',tier:'4th',pct:13},
   {nombre:'Yoongi',  emoji:'🐱',tier:'3rd',pct:14},
-  {nombre:'Namjoon', emoji:'🐨',tier:'4th',pct:13},
+  {nombre:'Hoseok',  emoji:'🌞',tier:'3rd',pct:14},
+  {nombre:'Jimin',   emoji:'🐥',tier:'2nd',pct:15},
+  {nombre:'Taehyung',emoji:'🐯',tier:'1st',pct:16},
+  {nombre:'Jungkook',emoji:'🐰',tier:'1st',pct:16},
 ];
 
 function getRate(){ return parseFloat(document.getElementById('rate').value)||0.125; }
@@ -465,7 +465,7 @@ function calcular(){
           <span class="res-persona">${m.emoji} ${m.nombre} <span class="res-badge">${pct}%</span></span>
           <span class="res-precio">${fmt(monto)}</span>
         </div>`;
-        resumen+=`  ${m.emoji} ${m.nombre} (${pct}%): ${fmt(monto)}\n`;
+        resumen+=`  ${m.emoji} ${m.nombre}: ${fmt(monto)}\n`;
       });
       resumen+='\n';
     }
@@ -488,7 +488,7 @@ function calcular(){
         <span class="total-link-nombre">${m.emoji} ${m.nombre} <span class="res-badge">${pct}%</span></span>
         <span class="total-link-val">${fmt(monto)}</span>
       </div>`;
-      resumen+=`${m.emoji} ${m.nombre}: ${fmt(monto)}\n`;
+      resumen+=`  ${m.emoji} ${m.nombre}: ${fmt(monto)}\n`;
     });
     totBlock.innerHTML=totHTML;
     res.appendChild(totBlock);
@@ -547,33 +547,54 @@ function abrirModal(li){
       <input type="text" placeholder="# orden" class="comp-orden">`;
     compList.appendChild(row);
   } else if(divMode==='igual'){
-    document.getElementById('comp-title').textContent='compradores';
+    document.getElementById('comp-title').textContent='compradores · # orden único';
     const n=parseInt(document.getElementById('n-personas').value)||7;
+    // Un solo campo de orden para todos
+    const ordenRow=document.createElement('div');
+    ordenRow.className='comp-row';
+    ordenRow.style.gridTemplateColumns='1fr';
+    ordenRow.innerHTML=`<input type="text" placeholder="# orden (mismo para todos)" class="comp-orden-unico">`;
+    compList.appendChild(ordenRow);
+    // N campos de nombre
     for(let j=0;j<n;j++){
       const row=document.createElement('div');
       row.className='comp-row';
-      row.innerHTML=`
-        <input type="text" placeholder="Persona ${j+1}" class="comp-nombre">
-        <input type="text" placeholder="# orden" class="comp-orden">`;
+      row.style.gridTemplateColumns='1fr';
+      row.innerHTML=`<input type="text" placeholder="Nombre persona ${j+1}" class="comp-nombre">`;
       compList.appendChild(row);
     }
   } else {
-    document.getElementById('comp-title').textContent='compradores por miembro';
+    document.getElementById('comp-title').textContent='por miembro · # orden único';
     const pcts=getPcts();
     const sumPct=pcts.reduce((a,b)=>a+b,0)||100;
+    const comBase=COM_BASE; const comTotal=getCom();
+    const comPorM=(comTotal-comBase)/MIEMBROS.length;
+    // Un solo campo de orden
+    const ordenRow=document.createElement('div');
+    ordenRow.className='comp-row';
+    ordenRow.style.gridTemplateColumns='1fr';
+    ordenRow.innerHTML=`<input type="text" placeholder="# orden (mismo para todos)" class="comp-orden-unico">`;
+    compList.appendChild(ordenRow);
+    // Un campo de nombre por miembro, versión = nombre miembro
     MIEMBROS.forEach((m,i)=>{
-      const monto=precioVenta*(pcts[i]/sumPct);
+      const montoVenta=precioVenta*(pcts[i]/sumPct);
+      const montoBase=precioBase*(pcts[i]/sumPct);
+      const comM=comPorM>0?comPorM:0;
       const row=document.createElement('div');
       row.className='comp-row';
-      row.style.gridTemplateColumns='auto 1fr 1fr';
+      row.style.gridTemplateColumns='auto 1fr';
+      row.dataset.miembro=m.nombre;
+      row.dataset.precioVenta=Math.round(montoVenta);
+      row.dataset.precioBase=Math.round(montoBase);
+      row.dataset.comision=Math.round(comM);
       row.innerHTML=`
-        <span style="font-size:13px;padding:0 4px">${m.emoji}</span>
-        <input type="text" placeholder="${m.nombre} · nombre" class="comp-nombre">
-        <input type="text" placeholder="# orden · ${fmt(monto)}" class="comp-orden">`;
+        <span style="font-size:14px;padding:0 4px">${m.emoji}</span>
+        <input type="text" placeholder="Nombre comprador de ${m.nombre}" class="comp-nombre">`;
       compList.appendChild(row);
     });
   }
 
+  window._modalDivMode = divMode;
   document.getElementById('modal-bg').className='modal-bg open';
 }
 
@@ -601,18 +622,57 @@ async function guardarPedido(){
   const registradoPor=USUARIOS[user].label;
   const fecha=new Date().toLocaleDateString('es-MX');
 
-  const nombres=Array.from(document.querySelectorAll('.comp-nombre')).map(i=>i.value.trim());
-  const ordenes=Array.from(document.querySelectorAll('.comp-orden')).map(i=>i.value.trim());
+  let filas = [];
+  const ordenUnico = (document.querySelector('.comp-orden-unico')||{value:''}).value.trim();
 
-  const filas=nombres.map((nombre,i)=>({
-    fecha, registradoPor, articulo, version,
-    link: linkUrl,
-    precioBase: fmt(precioBase),
-    precioVenta: precioVenta>0?fmt(precioVenta):'—',
-    comision: comision>0?fmt(comision):'—',
-    nombre: nombre||'—',
-    orden: ordenes[i]||'—',
-  }));
+  if(window._modalDivMode==='pct'){
+    // Por miembro: versión=nombre miembro, precio=precio de ese miembro, orden único
+    const miembroRows = Array.from(document.querySelectorAll('[data-miembro]'));
+    miembroRows.forEach(row=>{
+      const nombre = row.querySelector('.comp-nombre').value.trim();
+      filas.push({
+        fecha, registradoPor,
+        articulo,
+        version: row.dataset.miembro,
+        link: linkUrl,
+        precioBase: '$'+parseInt(row.dataset.precioBase).toLocaleString('es-MX'),
+        precioVenta: '$'+parseInt(row.dataset.precioVenta).toLocaleString('es-MX'),
+        comision: parseInt(row.dataset.comision)>0?'$'+parseInt(row.dataset.comision).toLocaleString('es-MX'):'—',
+        nombre: nombre||'—',
+        orden: ordenUnico||'—',
+      });
+    });
+  } else if(window._modalDivMode==='igual'){
+    // Igual entre N: orden único, nombre por persona
+    const nombres = Array.from(document.querySelectorAll('.comp-nombre')).map(i=>i.value.trim());
+    const pp = precioVenta/nombres.length;
+    const ppBase = precioBase/nombres.length;
+    const ppCom = comision/nombres.length;
+    nombres.forEach(nombre=>{
+      filas.push({
+        fecha, registradoPor, articulo, version,
+        link: linkUrl,
+        precioBase: fmt(ppBase),
+        precioVenta: fmt(pp),
+        comision: ppCom>0?fmt(ppCom):'—',
+        nombre: nombre||'—',
+        orden: ordenUnico||'—',
+      });
+    });
+  } else {
+    // Por link: una sola fila
+    const nombre = (document.querySelector('.comp-nombre')||{value:''}).value.trim();
+    const orden = (document.querySelector('.comp-orden')||{value:''}).value.trim();
+    filas.push({
+      fecha, registradoPor, articulo, version,
+      link: linkUrl,
+      precioBase: fmt(precioBase),
+      precioVenta: precioVenta>0?fmt(precioVenta):'—',
+      comision: comision>0?fmt(comision):'—',
+      nombre: nombre||'—',
+      orden: orden||'—',
+    });
+  }
 
   const okEl=document.getElementById('guardar-ok');
   okEl.textContent='enviando...';
