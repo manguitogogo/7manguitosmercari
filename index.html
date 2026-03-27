@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>7️⃣ manguitos mercari</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f0fa;--bg2:#ede8f8;--bg3:#fdf8ff;--lav2:#a080d0;--lav3:#7050a0;
+  --rose:#e880a8;--rose2:#f0c0d8;--rose3:#fce8f2;--text:#3a2060;--muted:#9070b0;
+  --muted2:#c8b0e0;--border:#ddd0f0;--white:#ffffff;--danger:#e06080;--success:#70b090;--warn:#e0a060;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;max-width:540px;margin:0 auto}
+
+header{background:var(--white);border-bottom:1px solid var(--border);padding:.9rem 1.25rem .7rem;position:sticky;top:0;z-index:20}
+.app-title{font-family:'DM Serif Display',serif;font-size:1.25rem;color:var(--lav3);margin-bottom:.55rem}
+.app-title em{color:var(--rose);font-style:italic}
+.rate-row{display:flex;gap:6px}
+.rate-pill{flex:1;background:var(--bg2);border-radius:9px;padding:5px 8px;display:flex;flex-direction:column;gap:1px}
+.rate-pill label{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.rate-pill input{background:none;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--text);width:100%}
+.rate-pill input[readonly]{color:var(--muted2);cursor:not-allowed}
+
+.user-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:.65rem 1rem;background:var(--bg);border-bottom:1px solid var(--border)}
+.utab{padding:8px 4px;border:none;border-radius:10px;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;text-align:center}
+.utab.active{background:var(--white);color:var(--lav3);box-shadow:0 1px 4px rgba(160,128,208,.15)}
+
+main{padding:.85rem 1rem 5rem}
+
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:1rem;margin-bottom:.85rem}
+.card-title{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem}
+
+.links-list{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.link-row{background:var(--bg);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:5px}
+.link-row-top{display:flex;gap:6px;align-items:center}
+.link-nombre{flex:1;font-size:13px;font-weight:500;color:var(--text);background:none;border:none;border-bottom:1.5px solid transparent;outline:none;font-family:'DM Sans',sans-serif;transition:border-color .2s;min-width:0}
+.link-nombre:focus{border-color:var(--lav2)}
+.link-nombre::placeholder{color:var(--muted2);font-weight:400}
+.link-yen-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.link-yen-sym{font-size:12px;color:var(--muted)}
+.link-yen{width:80px;font-size:13px;color:var(--text);background:var(--white);border:1.5px solid var(--border);border-radius:7px;outline:none;font-family:'DM Sans',sans-serif;padding:4px 7px;text-align:right;transition:border-color .2s}
+.link-yen:focus{border-color:var(--lav2)}
+.btn-del-link{background:none;border:none;color:var(--muted2);font-size:16px;cursor:pointer;line-height:1;transition:color .15s;flex-shrink:0}
+.btn-del-link:hover{color:var(--danger)}
+.link-url{width:100%;font-size:11px;color:var(--muted);background:none;border:none;border-bottom:1px solid var(--border);outline:none;font-family:'DM Sans',sans-serif;padding:2px 0;transition:border-color .2s}
+.link-url:focus{border-color:var(--lav2)}
+.link-url::placeholder{color:var(--muted2)}
+
+.btn-add-link{width:100%;padding:8px;border:1.5px dashed var(--border);border-radius:10px;background:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .2s}
+.btn-add-link:hover{border-color:var(--lav2);color:var(--lav2)}
+
+.div-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--bg2);border-radius:12px;padding:3px;margin-bottom:.75rem}
+.dtab{padding:7px;border:none;border-radius:9px;background:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .2s;text-align:center}
+.dtab.active{background:var(--white);color:var(--lav3)}
+
+.n-row{display:flex;align-items:center;gap:10px}
+.n-row label{font-size:12px;color:var(--muted);flex:1}
+.n-row input{width:64px;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;text-align:center}
+.n-row input:focus{border-color:var(--lav2)}
+
+.miembros-grid{display:flex;flex-direction:column;gap:5px;margin-bottom:6px}
+.m-row{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg);border-radius:10px}
+.m-emoji{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.m-nombre{flex:1;font-size:13px;font-weight:500}
+.m-tier{font-size:10px;color:var(--muted);margin-right:4px}
+.m-pct-wrap{display:flex;align-items:center;gap:3px}
+.m-pct-wrap input{width:42px;background:var(--white);border:1.5px solid var(--border);border-radius:6px;padding:3px 5px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);outline:none;text-align:center}
+.m-pct-wrap input:focus{border-color:var(--lav2)}
+.m-pct-wrap span{font-size:11px;color:var(--muted)}
+.pct-sum{font-size:11px;text-align:right;margin-bottom:8px}
+.pct-ok{color:var(--success)}.pct-err{color:var(--danger)}
+
+.btn-calc{width:100%;padding:12px;background:linear-gradient(135deg,var(--lav2),var(--rose));color:var(--white);border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .2s;margin-bottom:.85rem}
+.btn-calc:hover{opacity:.88}
+
+/* RESULTADOS */
+.resultados{background:var(--white);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:.85rem}
+.res-head{background:var(--bg2);padding:9px 14px;font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border)}
+.res-link-block{border-bottom:1px solid var(--border)}
+.res-link-block:last-of-type{border-bottom:none}
+.res-link-header{padding:8px 14px;background:var(--bg3);border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.res-link-nombre{font-size:13px;font-weight:500}
+.res-link-sub{font-size:10px;color:var(--muted);margin-top:1px}
+.res-link-mxn{font-size:14px;font-weight:500;color:var(--lav2);flex-shrink:0}
+.res-row{display:flex;justify-content:space-between;align-items:center;padding:7px 14px;border-bottom:1px solid var(--border)}
+.res-row:last-child{border-bottom:none}
+.res-persona{font-size:13px;color:var(--text);display:flex;align-items:center;gap:5px}
+.res-badge{font-size:10px;background:var(--bg2);color:var(--muted);border-radius:999px;padding:2px 6px}
+.res-precio{font-size:14px;font-weight:500;color:var(--rose)}
+
+/* BTN REGISTRAR dentro de cada link */
+.btn-registrar{margin:8px 14px;padding:8px 14px;border-radius:10px;border:1.5px solid var(--rose2);background:var(--rose3);color:var(--rose);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;display:block;width:calc(100% - 28px)}
+.btn-registrar:hover{background:var(--rose);color:var(--white)}
+
+.total-bloque{border-top:1px solid var(--border)}
+.total-link-row{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--bg2)}
+.total-link-nombre{font-size:12px;font-weight:500;color:var(--lav3);display:flex;align-items:center;gap:5px}
+.total-link-val{font-size:15px;font-weight:500;color:var(--rose)}
+.total-general{background:var(--rose3);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--rose2)}
+.total-general span{font-size:11px;font-weight:500;color:var(--rose);text-transform:uppercase;letter-spacing:.06em}
+.total-general strong{font-size:20px;color:var(--rose)}
+
+.acciones{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:.75rem 0}
+.btn-acc{padding:8px 14px;border-radius:10px;border:1.5px solid var(--border);background:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-acc:hover{border-color:var(--lav2);color:var(--lav2);background:var(--bg2)}
+.copy-ok{font-size:11px;color:var(--success)}
+
+/* MODAL REGISTRO */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(80,40,120,.35);z-index:100;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--white);border-radius:20px 20px 0 0;padding:1.25rem;width:100%;max-width:540px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:14px;font-weight:500;color:var(--lav3);margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1}
+.mfield{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.mfield label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.mfield input,.mfield select{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;width:100%}
+.mfield input:focus,.mfield select:focus{border-color:var(--lav2)}
+.mfield input::placeholder{color:var(--muted2)}
+.compradores-section{margin-bottom:10px}
+.comp-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.comp-row{background:var(--bg);border-radius:10px;padding:8px 10px;margin-bottom:5px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.comp-row input{background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:6px 9px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--text);outline:none;width:100%}
+.comp-row input:focus{border-color:var(--lav2)}
+.comp-row input::placeholder{color:var(--muted2)}
+.modal-hint{font-size:11px;color:var(--muted2);margin-bottom:10px;line-height:1.5;background:var(--bg2);border-radius:8px;padding:8px 10px}
+.btn-guardar{width:100%;padding:12px;background:linear-gradient(135deg,var(--lav2),var(--rose));color:var(--white);border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:opacity .2s;margin-top:4px}
+.btn-guardar:hover{opacity:.88}
+.guardar-ok{font-size:12px;color:var(--success);text-align:center;margin-top:8px;min-height:16px}
+.sheets-url-hint{font-size:10px;color:var(--muted);margin-top:6px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="app-title">7️⃣ manguitos<em> mercari</em></div>
+  <div class="rate-row">
+    <div class="rate-pill" id="pill-rate">
+      <label>Tipo de cambio ¥</label>
+      <input type="number" id="rate" value="0.125" step="0.001" min="0.001" inputmode="decimal">
+    </div>
+    <div class="rate-pill">
+      <label>Mi comisión $</label>
+      <input type="number" id="comision" value="10" step="1" min="0" inputmode="numeric">
+    </div>
+  </div>
+</header>
+
+<div class="user-tabs">
+  <button class="utab active" id="utab-manguita" onclick="setUser('manguita')">🌸 Manguita</button>
+  <button class="utab" id="utab-angie" onclick="setUser('angie')">✨ Angie</button>
+  <button class="utab" id="utab-viviana" onclick="setUser('viviana')">🐿️ Viviana</button>
+</div>
+
+<main>
+  <div class="card">
+    <div class="card-title">links a cotizar</div>
+    <div class="links-list" id="links-list"></div>
+    <button class="btn-add-link" onclick="addLink()">+ agregar link</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">precio x compartido</div>
+    <div class="div-tabs">
+      <button class="dtab active" id="dtab-igual" onclick="setDiv('igual')">÷ igual entre N</button>
+      <button class="dtab" id="dtab-pct" onclick="setDiv('pct')">💜 por miembro</button>
+    </div>
+    <div id="panel-igual">
+      <div class="n-row">
+        <label>¿Entre cuántas personas?</label>
+        <input type="number" id="n-personas" value="7" min="1" max="50" step="1" inputmode="numeric">
+      </div>
+    </div>
+    <div id="panel-pct" style="display:none">
+      <div class="miembros-grid" id="miembros-grid"></div>
+      <div class="pct-sum pct-ok" id="pct-sum">Total: 100%</div>
+    </div>
+  </div>
+
+  <button class="btn-calc" onclick="calcular()">calcular ✦</button>
+
+  <div id="res-wrap" style="display:none">
+    <div class="resultados" id="resultados"></div>
+    <div class="acciones">
+      <button class="btn-acc" onclick="copiar()">📋 copiar resumen</button>
+      <span class="copy-ok" id="copy-ok"></span>
+    </div>
+  </div>
+</main>
+
+<!-- MODAL REGISTRO -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-title">
+      <span>registrar pedido</span>
+      <button class="modal-close" onclick="cerrarModal()">×</button>
+    </div>
+    <div class="modal-hint" id="modal-hint"></div>
+    <div class="mfield">
+      <label>Artículo</label>
+      <input type="text" id="m-articulo" placeholder="Ej: Photocard JK versión A">
+    </div>
+    <div class="mfield">
+      <label>Versión</label>
+      <input type="text" id="m-version" placeholder="Ej: ver. A, Lucky Draw...">
+    </div>
+    <div class="mfield">
+      <label>Link (opcional)</label>
+      <input type="text" id="m-link" placeholder="https://jp.mercari.com/...">
+    </div>
+    <div class="compradores-section">
+      <div class="comp-title">compradores (nombre · # orden)</div>
+      <div id="compradores-list"></div>
+    </div>
+    <div class="mfield">
+      <label>URL de tu Google Sheets (Web App)</label>
+      <input type="text" id="sheets-url" placeholder="https://script.google.com/macros/s/...">
+      <div class="sheets-url-hint">Pega aquí la URL de tu Google Apps Script. Solo se configura una vez.</div>
+    </div>
+    <button class="btn-guardar" onclick="guardarPedido()">💾 guardar en Sheets</button>
+    <div class="guardar-ok" id="guardar-ok"></div>
+  </div>
+</div>
+
+<script>
+const USUARIOS = {
+  manguita:{ label:'🌸 Manguita', links:[], divMode:'igual', n:7 },
+  angie:   { label:'✨ Angie',    links:[], divMode:'igual', n:7 },
+  viviana: { label:'🐿️ Viviana',  links:[], divMode:'igual', n:7 },
+};
+let user = 'manguita';
+let divMode = 'igual';
+let modalLink = null;
+
+const MIEMBROS = [
+  {nombre:'Jungkook',emoji:'🐰',tier:'1st',pct:16},
+  {nombre:'Jimin',   emoji:'🐥',tier:'2nd',pct:15},
+  {nombre:'Taehyung',emoji:'🐯',tier:'1st',pct:16},
+  {nombre:'Hoseok',  emoji:'🌞',tier:'3rd',pct:14},
+  {nombre:'Jin',     emoji:'🐹',tier:'4th',pct:13},
+  {nombre:'Yoongi',  emoji:'🐱',tier:'3rd',pct:14},
+  {nombre:'Namjoon', emoji:'🐨',tier:'4th',pct:13},
+];
+
+function getRate(){ return parseFloat(document.getElementById('rate').value)||0.125; }
+function getCom(){  return parseFloat(document.getElementById('comision').value)||10; }
+function calcMXN(yen){ return ((yen+350)*1.04)*getRate()+getCom(); }
+function fmt(n){ return '$'+Math.round(n).toLocaleString('es-MX'); }
+
+// bloquear rate para angie y viviana
+function setUser(u){
+  saveState();
+  user=u;
+  ['manguita','angie','viviana'].forEach(x=>{
+    document.getElementById('utab-'+x).className='utab'+(x===u?' active':'');
+  });
+  const rateInput=document.getElementById('rate');
+  if(u==='manguita'){
+    rateInput.removeAttribute('readonly');
+    rateInput.style.color='';
+  } else {
+    rateInput.setAttribute('readonly','readonly');
+    rateInput.style.color='var(--muted2)';
+  }
+  loadState();
+  document.getElementById('res-wrap').style.display='none';
+}
+
+function saveState(){
+  USUARIOS[user].links=getLinks();
+  USUARIOS[user].divMode=divMode;
+  USUARIOS[user].n=parseInt(document.getElementById('n-personas').value)||7;
+  USUARIOS[user].pcts=MIEMBROS.map((_,i)=>{
+    const el=document.getElementById('mpct-'+i);
+    return el?parseFloat(el.value)||MIEMBROS[i].pct:MIEMBROS[i].pct;
+  });
+}
+
+function loadState(){
+  const u=USUARIOS[user];
+  renderLinks(u.links||[]);
+  setDiv(u.divMode||'igual',true);
+  document.getElementById('n-personas').value=u.n||7;
+  if(u.pcts) u.pcts.forEach((p,i)=>{ const el=document.getElementById('mpct-'+i); if(el) el.value=p; });
+  updatePctSum();
+}
+
+function getLinks(){
+  return Array.from(document.querySelectorAll('.link-row')).map(r=>({
+    nombre: r.querySelector('.link-nombre').value.trim(),
+    yen:    parseInt(r.querySelector('.link-yen').value)||0,
+    url:    r.querySelector('.link-url').value.trim(),
+  }));
+}
+
+function addLink(){
+  const list=document.getElementById('links-list');
+  const row=document.createElement('div');
+  row.className='link-row';
+  row.innerHTML=`
+    <div class="link-row-top">
+      <input class="link-nombre" type="text" placeholder="Nombre (opcional)" autocomplete="off">
+      <div class="link-yen-wrap">
+        <span class="link-yen-sym">¥</span>
+        <input class="link-yen" type="number" placeholder="0" step="100" min="0" inputmode="numeric">
+      </div>
+      <button class="btn-del-link" onclick="this.closest('.link-row').remove()">×</button>
+    </div>
+    <input class="link-url" type="text" placeholder="link (opcional)">`;
+  list.appendChild(row);
+  row.querySelector('.link-yen').focus();
+}
+
+function renderLinks(links){
+  const list=document.getElementById('links-list');
+  list.innerHTML='';
+  (links||[]).forEach(l=>{
+    const row=document.createElement('div');
+    row.className='link-row';
+    row.innerHTML=`
+      <div class="link-row-top">
+        <input class="link-nombre" type="text" value="${l.nombre||''}" placeholder="Nombre (opcional)" autocomplete="off">
+        <div class="link-yen-wrap">
+          <span class="link-yen-sym">¥</span>
+          <input class="link-yen" type="number" value="${l.yen||''}" placeholder="0" step="100" min="0" inputmode="numeric">
+        </div>
+        <button class="btn-del-link" onclick="this.closest('.link-row').remove()">×</button>
+      </div>
+      <input class="link-url" type="text" value="${l.url||''}" placeholder="link (opcional)">`;
+    list.appendChild(row);
+  });
+}
+
+function setDiv(m,silent){
+  divMode=m;
+  document.getElementById('panel-igual').style.display=m==='igual'?'block':'none';
+  document.getElementById('panel-pct').style.display=m==='pct'?'block':'none';
+  document.getElementById('dtab-igual').className='dtab'+(m==='igual'?' active':'');
+  document.getElementById('dtab-pct').className='dtab'+(m==='pct'?' active':'');
+  if(!silent) document.getElementById('res-wrap').style.display='none';
+}
+
+function renderMiembros(){
+  const el=document.getElementById('miembros-grid');
+  el.innerHTML='';
+  MIEMBROS.forEach((m,i)=>{
+    const row=document.createElement('div');
+    row.className='m-row';
+    row.innerHTML=`
+      <span class="m-emoji">${m.emoji}</span>
+      <span class="m-nombre">${m.nombre}</span>
+      <span class="m-tier">${m.tier}</span>
+      <div class="m-pct-wrap">
+        <input type="number" id="mpct-${i}" value="${m.pct}" min="0" max="100" step="1" inputmode="numeric" oninput="updatePctSum()">
+        <span>%</span>
+      </div>`;
+    el.appendChild(row);
+  });
+  updatePctSum();
+}
+
+function updatePctSum(){
+  const total=MIEMBROS.reduce((s,_,i)=>{
+    const el=document.getElementById('mpct-'+i);
+    return s+(el?parseFloat(el.value)||0:MIEMBROS[i].pct);
+  },0);
+  const el=document.getElementById('pct-sum');
+  el.textContent='Total: '+Math.round(total)+'%';
+  el.className='pct-sum '+(Math.abs(total-100)<0.5?'pct-ok':'pct-err');
+}
+
+function getPcts(){
+  return MIEMBROS.map((_,i)=>{
+    const el=document.getElementById('mpct-'+i);
+    return el?parseFloat(el.value)||0:MIEMBROS[i].pct;
+  });
+}
+
+function calcular(){
+  saveState();
+  const links=getLinks().filter(l=>l.yen>0);
+  if(!links.length){ alert('Agrega al menos un link con precio en ¥'); return; }
+
+  const wrap=document.getElementById('res-wrap');
+  const res=document.getElementById('resultados');
+  wrap.style.display='block';
+  res.innerHTML=`<div class="res-head">${USUARIOS[user].label} · resultado</div>`;
+
+  let resumen=`${USUARIOS[user].label} · Manguitos Mercari\n${'─'.repeat(32)}\n\n`;
+  const pcts=getPcts();
+  const sumPct=pcts.reduce((a,b)=>a+b,0)||100;
+
+  links.forEach((link,li)=>{
+    const mxn=calcMXN(link.yen);
+    const block=document.createElement('div');
+    block.className='res-link-block';
+
+    let html=`<div class="res-link-header">
+      <div>
+        <div class="res-link-nombre">${link.nombre||'Link '+(li+1)}</div>
+        <div class="res-link-sub">¥${link.yen.toLocaleString()} · mercari</div>
+      </div>
+      <div class="res-link-mxn">${fmt(mxn)}</div>
+    </div>`;
+
+    resumen+=`▸ ${link.nombre||'Link '+(li+1)}  ¥${link.yen.toLocaleString()} → ${fmt(mxn)}\n`;
+
+    if(divMode==='igual'){
+      const n=parseInt(document.getElementById('n-personas').value)||7;
+      const pp=mxn/n;
+      resumen+=`  ÷${n} = ${fmt(pp)} c/u\n\n`;
+      for(let j=1;j<=n;j++){
+        html+=`<div class="res-row">
+          <span class="res-persona">Persona ${j}</span>
+          <span class="res-precio">${fmt(pp)}</span>
+        </div>`;
+      }
+    } else {
+      MIEMBROS.forEach((m,i)=>{
+        const pct=pcts[i];
+        const monto=mxn*(pct/sumPct);
+        html+=`<div class="res-row">
+          <span class="res-persona">${m.emoji} ${m.nombre} <span class="res-badge">${pct}%</span></span>
+          <span class="res-precio">${fmt(monto)}</span>
+        </div>`;
+        resumen+=`  ${m.emoji} ${m.nombre} (${pct}%): ${fmt(monto)}\n`;
+      });
+      resumen+='\n';
+    }
+
+    html+=`<button class="btn-registrar" onclick="abrirModal(${li})">📝 registrar pedido de este link</button>`;
+    block.innerHTML=html;
+    res.appendChild(block);
+  });
+
+  if(divMode==='pct'&&links.length>1){
+    const totalMXN=links.reduce((s,l)=>s+calcMXN(l.yen),0);
+    const totBlock=document.createElement('div');
+    totBlock.className='total-bloque';
+    let totHTML='';
+    resumen+='─'.repeat(32)+'\nTotal por miembro:\n';
+    MIEMBROS.forEach((m,i)=>{
+      const pct=pcts[i];
+      const monto=totalMXN*(pct/sumPct);
+      totHTML+=`<div class="total-link-row">
+        <span class="total-link-nombre">${m.emoji} ${m.nombre} <span class="res-badge">${pct}%</span></span>
+        <span class="total-link-val">${fmt(monto)}</span>
+      </div>`;
+      resumen+=`${m.emoji} ${m.nombre}: ${fmt(monto)}\n`;
+    });
+    totBlock.innerHTML=totHTML;
+    res.appendChild(totBlock);
+  }
+
+  const totalFinal=links.reduce((s,l)=>s+calcMXN(l.yen),0);
+  const totGen=document.createElement('div');
+  totGen.className='total-general';
+  totGen.innerHTML=`<span>total general</span><strong>${fmt(totalFinal)}</strong>`;
+  res.appendChild(totGen);
+
+  resumen+=`\n💜 Total: ${fmt(totalFinal)}`;
+  window._resumen=resumen;
+  window._calcLinks=links;
+  wrap.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ── MODAL REGISTRO ──
+function abrirModal(li){
+  const links=window._calcLinks||[];
+  const link=links[li]||{};
+  modalLink={...link, mxn: calcMXN(link.yen||0), index:li};
+
+  document.getElementById('m-articulo').value=link.nombre||'';
+  document.getElementById('m-version').value='';
+  document.getElementById('m-link').value=link.url||'';
+  document.getElementById('guardar-ok').textContent='';
+
+  const hint=document.getElementById('modal-hint');
+  hint.textContent=`${link.nombre||'Link '+(li+1)} · ¥${(link.yen||0).toLocaleString()} · ${fmt(modalLink.mxn)}`;
+
+  const compList=document.getElementById('compradores-list');
+  compList.innerHTML='';
+  const n = divMode==='igual'
+    ? (parseInt(document.getElementById('n-personas').value)||7)
+    : MIEMBROS.length;
+
+  if(divMode==='igual'){
+    for(let j=0;j<n;j++){
+      const row=document.createElement('div');
+      row.className='comp-row';
+      row.innerHTML=`
+        <input type="text" placeholder="Nombre persona ${j+1}" class="comp-nombre">
+        <input type="text" placeholder="# orden" class="comp-orden">`;
+      compList.appendChild(row);
+    }
+  } else {
+    MIEMBROS.forEach((m,i)=>{
+      const row=document.createElement('div');
+      row.className='comp-row';
+      row.innerHTML=`
+        <input type="text" value="${m.emoji} ${m.nombre}" class="comp-nombre" readonly style="color:var(--muted)">
+        <input type="text" placeholder="# orden" class="comp-orden">`;
+      compList.appendChild(row);
+    });
+  }
+
+  const savedUrl=localStorage.getItem('sheetsUrl')||'';
+  document.getElementById('sheets-url').value=savedUrl;
+
+  document.getElementById('modal-bg').className='modal-bg open';
+}
+
+function cerrarModal(){
+  document.getElementById('modal-bg').className='modal-bg';
+}
+
+document.getElementById('modal-bg').addEventListener('click',function(e){
+  if(e.target===this) cerrarModal();
+});
+
+async function guardarPedido(){
+  const url=document.getElementById('sheets-url').value.trim();
+  if(!url){ alert('Pega la URL de tu Google Apps Script primero'); return; }
+  localStorage.setItem('sheetsUrl',url);
+
+  const articulo=document.getElementById('m-articulo').value.trim()||'—';
+  const version=document.getElementById('m-version').value.trim()||'—';
+  const linkUrl=document.getElementById('m-link').value.trim()||modalLink.url||'—';
+  const mxn=modalLink.mxn||0;
+  const registradoPor=USUARIOS[user].label;
+  const fecha=new Date().toLocaleDateString('es-MX');
+
+  const nombres=Array.from(document.querySelectorAll('.comp-nombre')).map(i=>i.value.trim());
+  const ordenes=Array.from(document.querySelectorAll('.comp-orden')).map(i=>i.value.trim());
+
+  const filas=nombres.map((nombre,i)=>({
+    fecha, registradoPor, articulo, version,
+    link: linkUrl,
+    precio: fmt(mxn),
+    nombre: nombre||'—',
+    orden: ordenes[i]||'—',
+  }));
+
+  const okEl=document.getElementById('guardar-ok');
+  okEl.textContent='enviando...';
+
+  try{
+    await fetch(url,{
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({filas}),
+    });
+    okEl.textContent='✓ guardado en Sheets';
+    setTimeout(()=>cerrarModal(),1800);
+  } catch(e){
+    okEl.textContent='✗ error al conectar — revisa la URL';
+  }
+}
+
+function copiar(){
+  if(!window._resumen) return;
+  navigator.clipboard.writeText(window._resumen).then(()=>{
+    const el=document.getElementById('copy-ok');
+    el.textContent='✓ copiado';
+    setTimeout(()=>el.textContent='',2500);
+  });
+}
+
+document.getElementById('rate').addEventListener('input',()=>document.getElementById('res-wrap').style.display='none');
+document.getElementById('comision').addEventListener('input',()=>document.getElementById('res-wrap').style.display='none');
+
+renderMiembros();
+addLink();
+</script>
+</body>
+</html>
