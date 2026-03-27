@@ -167,7 +167,7 @@ main{padding:.85rem 1rem 5rem}
       <button class="dtab" id="dtab-pct" onclick="setDiv('pct')">💜 por miembro</button>
       <button class="dtab" id="dtab-igual" onclick="setDiv('igual')">÷ igual entre N</button>
     </div>
-    <div id="panel-igual">
+    <div id="panel-igual" style="display:none">
       <div class="n-row">
         <label>¿Entre cuántas personas?</label>
         <input type="number" id="n-personas" value="7" min="1" max="50" step="1" inputmode="numeric">
@@ -210,8 +210,8 @@ main{padding:.85rem 1rem 5rem}
       <input type="text" id="m-version" placeholder="Ej: ver. A, Lucky Draw...">
     </div>
     <div class="mfield">
-      <label>Link (opcional)</label>
-      <input type="text" id="m-link" placeholder="https://jp.mercari.com/...">
+      <label>Link</label>
+      <input type="text" id="m-link" placeholder="https://jp.mercari.com/">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
       <div class="mfield" style="margin:0">
