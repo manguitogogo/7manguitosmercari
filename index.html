@@ -607,10 +607,9 @@ document.getElementById('modal-bg').addEventListener('click',function(e){
 });
 
 async function guardarPedido(){
-  const urlGuardada=localStorage.getItem('sheetsUrl')||'';
+  const SHEETS_URL='https://script.google.com/macros/s/AKfycbwB4V8NHkiJMi2bxfZaR2R_c_zBtrcy0eqriabA_7cQTBNQlkH9zFtCmlizw3OQOO-mAQ/exec';
   const urlInput=document.getElementById('sheets-url').value.trim();
-  const url=urlInput||urlGuardada;
-  if(!url){ alert('Configura la URL de Google Sheets — contacta a Manguita'); return; }
+  const url=urlInput||SHEETS_URL;
   if(urlInput) localStorage.setItem('sheetsUrl',urlInput);
 
   const articulo=document.getElementById('m-articulo').value.trim()||'—';
