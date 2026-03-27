@@ -163,9 +163,9 @@ main{padding:.85rem 1rem 5rem}
   <div class="card">
     <div class="card-title">precio x compartido</div>
     <div class="div-tabs" style="grid-template-columns:1fr 1fr 1fr">
-      <button class="dtab active" id="dtab-igual" onclick="setDiv('igual')">÷ igual entre N</button>
+      <button class="dtab active" id="dtab-uno" onclick="setDiv('uno')">👤 por link</button>
       <button class="dtab" id="dtab-pct" onclick="setDiv('pct')">💜 por miembro</button>
-      <button class="dtab" id="dtab-uno" onclick="setDiv('uno')">👤 por link</button>
+      <button class="dtab" id="dtab-igual" onclick="setDiv('igual')">÷ igual entre N</button>
     </div>
     <div id="panel-igual">
       <div class="n-row">
@@ -243,12 +243,12 @@ main{padding:.85rem 1rem 5rem}
 
 <script>
 const USUARIOS = {
-  manguita:{ label:'🌸 Manguita', links:[], divMode:'igual', n:7 },
-  angie:   { label:'✨ Angie',    links:[], divMode:'igual', n:7 },
-  viviana: { label:'🐿️ Viviana',  links:[], divMode:'igual', n:7 },
+  manguita:{ label:'🌸 Manguita', links:[], divMode:'uno', n:7 },
+  angie:   { label:'✨ Angie',    links:[], divMode:'uno', n:7 },
+  viviana: { label:'🐿️ Viviana',  links:[], divMode:'uno', n:7 },
 };
 let user = 'manguita';
-let divMode = 'igual';
+let divMode = 'uno';
 let modalLink = null;
 
 const MIEMBROS = [
