@@ -162,9 +162,10 @@ main{padding:.85rem 1rem 5rem}
 
   <div class="card">
     <div class="card-title">precio x compartido</div>
-    <div class="div-tabs">
+    <div class="div-tabs" style="grid-template-columns:1fr 1fr 1fr">
       <button class="dtab active" id="dtab-igual" onclick="setDiv('igual')">÷ igual entre N</button>
       <button class="dtab" id="dtab-pct" onclick="setDiv('pct')">💜 por miembro</button>
+      <button class="dtab" id="dtab-uno" onclick="setDiv('uno')">👤 por link</button>
     </div>
     <div id="panel-igual">
       <div class="n-row">
@@ -175,6 +176,9 @@ main{padding:.85rem 1rem 5rem}
     <div id="panel-pct" style="display:none">
       <div class="miembros-grid" id="miembros-grid"></div>
       <div class="pct-sum pct-ok" id="pct-sum">Total: 100%</div>
+    </div>
+    <div id="panel-uno" style="display:none">
+      <p style="font-size:12px;color:var(--muted);padding:4px 2px">Precio del link completo para una sola persona.</p>
     </div>
   </div>
 
@@ -216,11 +220,11 @@ main{padding:.85rem 1rem 5rem}
       </div>
       <div class="mfield" style="margin:0">
         <label>Precio de venta MXN</label>
-        <input type="number" id="m-precio-venta" placeholder="0" min="0" step="1" inputmode="numeric" oninput="calcComision()">
+        <input type="text" id="m-precio-venta" readonly style="color:var(--lav2);font-weight:500">
       </div>
     </div>
     <div class="mfield">
-      <label>Comisión (venta − base)</label>
+      <label>Comisión de ellas</label>
       <input type="text" id="m-comision" readonly style="color:var(--success);font-weight:500">
     </div>
     <div class="compradores-section">
@@ -259,7 +263,9 @@ const MIEMBROS = [
 
 function getRate(){ return parseFloat(document.getElementById('rate').value)||0.125; }
 function getCom(){  return parseFloat(document.getElementById('comision').value)||10; }
-function calcMXN(yen){ return ((yen+350)*1.04)*getRate()+getCom(); }
+const COM_BASE = 10;
+function calcMXN(yen, com){ return ((yen+350)*1.04)*getRate()+(com!==undefined?com:COM_BASE); }
+function calcMXNBase(yen){ return calcMXN(yen, COM_BASE); }
 function fmt(n){ return '$'+Math.round(n).toLocaleString('es-MX'); }
 
 // bloquear rate para angie y viviana
@@ -350,8 +356,10 @@ function setDiv(m,silent){
   divMode=m;
   document.getElementById('panel-igual').style.display=m==='igual'?'block':'none';
   document.getElementById('panel-pct').style.display=m==='pct'?'block':'none';
+  document.getElementById('panel-uno').style.display=m==='uno'?'block':'none';
   document.getElementById('dtab-igual').className='dtab'+(m==='igual'?' active':'');
   document.getElementById('dtab-pct').className='dtab'+(m==='pct'?' active':'');
+  document.getElementById('dtab-uno').className='dtab'+(m==='uno'?' active':'');
   if(!silent) document.getElementById('res-wrap').style.display='none';
 }
 
@@ -420,7 +428,13 @@ function calcular(){
 
     resumen+=`▸ ${link.nombre||'Link '+(li+1)}  ¥${link.yen.toLocaleString()} → ${fmt(mxn)}\n`;
 
-    if(divMode==='igual'){
+    if(divMode==='uno'){
+      resumen+=`  Precio completo: ${fmt(mxn)}\n\n`;
+      html+=`<div class="res-row">
+        <span class="res-persona" style="font-weight:500;color:var(--lav2)">precio por link</span>
+        <span class="res-precio">${fmt(mxn)}</span>
+      </div>`;
+    } else if(divMode==='igual'){
       const n=parseInt(document.getElementById('n-personas').value)||7;
       const pp=mxn/n;
       resumen+=`  ÷${n} = ${fmt(pp)} c/u\n\n`;
@@ -443,10 +457,7 @@ function calcular(){
       resumen+='\n';
     }
 
-    html+=`<div style="display:flex;gap:6px;margin:8px 14px">
-      <button class="btn-registrar" style="margin:0;flex:1" onclick="abrirModal(${li},false)">📝 registrar compartido</button>
-      <button class="btn-registrar" style="margin:0;flex:1;background:var(--bg2);color:var(--lav2);border-color:var(--lav2)" onclick="abrirModal(${li},true)">👤 precio por link</button>
-    </div>`;
+    html+=`<button class="btn-registrar" onclick="abrirModal(${li})">📝 registrar pedido</button>`;
     block.innerHTML=html;
     res.appendChild(block);
   });
@@ -483,24 +494,30 @@ function calcular(){
 }
 
 // ── MODAL REGISTRO ──
-function abrirModal(li, soloUna){
+function abrirModal(li){
   const links=window._calcLinks||[];
   const link=links[li]||{};
-  const mxn=calcMXN(link.yen||0);
-  modalLink={...link, mxn, index:li, soloUna:!!soloUna};
+  const yen=link.yen||0;
+  const comActual=getCom();
+  const precioBase=calcMXNBase(yen);      // siempre con $10 fijos
+  const precioVenta=calcMXN(yen,comActual); // con la comisión que pusieron arriba
+  const comisionEllas=precioVenta-precioBase;
+
+  modalLink={...link, precioBase, precioVenta, comisionEllas, index:li};
 
   document.getElementById('m-articulo').value=link.nombre||'';
   document.getElementById('m-version').value='';
   document.getElementById('m-link').value=link.url||'';
   document.getElementById('guardar-ok').textContent='';
-  document.getElementById('m-precio-base').value=fmt(mxn);
-  document.getElementById('m-precio-venta').value='';
-  document.getElementById('m-comision').value='';
+
+  // Llenar precios automáticamente, solo lectura
+  document.getElementById('m-precio-base').value=fmt(precioBase);
+  document.getElementById('m-precio-venta').value=fmt(precioVenta);
+  document.getElementById('m-comision').value=comisionEllas>0?fmt(comisionEllas):'$0';
 
   const hint=document.getElementById('modal-hint');
-  hint.textContent=`${link.nombre||'Link '+(li+1)} · ¥${(link.yen||0).toLocaleString()} · ${fmt(mxn)} base`;
+  hint.textContent=`${link.nombre||'Link '+(li+1)} · ¥${yen.toLocaleString()} · base ${fmt(precioBase)} · venta ${fmt(precioVenta)}`;
 
-  // Ocultar URL a Angie y Viviana
   document.getElementById('sheets-url-field').style.display=user==='manguita'?'block':'none';
   const savedUrl=localStorage.getItem('sheetsUrl')||'';
   document.getElementById('sheets-url').value=savedUrl;
@@ -508,51 +525,43 @@ function abrirModal(li, soloUna){
   const compList=document.getElementById('compradores-list');
   compList.innerHTML='';
 
-  if(soloUna){
-    // Modo una sola compradora
-    document.getElementById('comp-title').textContent='comprador/a (nombre · # orden)';
+  if(divMode==='uno'){
+    document.getElementById('comp-title').textContent='comprador/a';
     const row=document.createElement('div');
     row.className='comp-row';
     row.innerHTML=`
-      <input type="text" placeholder="Nombre comprador/a" class="comp-nombre">
+      <input type="text" placeholder="Nombre" class="comp-nombre">
       <input type="text" placeholder="# orden" class="comp-orden">`;
     compList.appendChild(row);
   } else if(divMode==='igual'){
-    document.getElementById('comp-title').textContent='compradores (nombre · # orden)';
+    document.getElementById('comp-title').textContent='compradores';
     const n=parseInt(document.getElementById('n-personas').value)||7;
     for(let j=0;j<n;j++){
       const row=document.createElement('div');
       row.className='comp-row';
       row.innerHTML=`
-        <input type="text" placeholder="Nombre persona ${j+1}" class="comp-nombre">
+        <input type="text" placeholder="Persona ${j+1}" class="comp-nombre">
         <input type="text" placeholder="# orden" class="comp-orden">`;
       compList.appendChild(row);
     }
   } else {
-    document.getElementById('comp-title').textContent='compradores por miembro (nombre · # orden)';
+    document.getElementById('comp-title').textContent='compradores por miembro';
     const pcts=getPcts();
     const sumPct=pcts.reduce((a,b)=>a+b,0)||100;
     MIEMBROS.forEach((m,i)=>{
-      const monto=mxn*(pcts[i]/sumPct);
+      const monto=precioVenta*(pcts[i]/sumPct);
       const row=document.createElement('div');
       row.className='comp-row';
       row.style.gridTemplateColumns='auto 1fr 1fr';
       row.innerHTML=`
         <span style="font-size:13px;padding:0 4px">${m.emoji}</span>
-        <input type="text" placeholder="${m.nombre} — nombre comprador" class="comp-nombre">
+        <input type="text" placeholder="${m.nombre} · nombre" class="comp-nombre">
         <input type="text" placeholder="# orden · ${fmt(monto)}" class="comp-orden">`;
       compList.appendChild(row);
     });
   }
 
   document.getElementById('modal-bg').className='modal-bg open';
-}
-
-function calcComision(){
-  const base=modalLink?modalLink.mxn:0;
-  const venta=parseFloat(document.getElementById('m-precio-venta').value)||0;
-  const com=venta-base;
-  document.getElementById('m-comision').value=com>=0?fmt(com):'—';
 }
 
 function cerrarModal(){
@@ -573,9 +582,9 @@ async function guardarPedido(){
   const articulo=document.getElementById('m-articulo').value.trim()||'—';
   const version=document.getElementById('m-version').value.trim()||'—';
   const linkUrl=document.getElementById('m-link').value.trim()||modalLink.url||'—';
-  const precioBase=modalLink.mxn||0;
-  const precioVenta=parseFloat(document.getElementById('m-precio-venta').value)||0;
-  const comision=precioVenta>0?precioVenta-precioBase:0;
+  const precioBase=modalLink.precioBase||0;
+  const precioVenta=modalLink.precioVenta||0;
+  const comision=modalLink.comisionEllas||0;
   const registradoPor=USUARIOS[user].label;
   const fecha=new Date().toLocaleDateString('es-MX');
 
