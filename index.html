@@ -414,7 +414,7 @@ function calcular(){
   const sumPct=pcts.reduce((a,b)=>a+b,0)||100;
 
   links.forEach((link,li)=>{
-    const mxn=calcMXN(link.yen);
+    const comActualRender=getCom(); const mxnBase=calcMXNBase(link.yen); const mxn=calcMXN(link.yen,comActualRender); const comisionEllas=mxn-mxnBase;
     const block=document.createElement('div');
     block.className='res-link-block';
 
@@ -423,16 +423,29 @@ function calcular(){
         <div class="res-link-nombre">${link.nombre||'Link '+(li+1)}</div>
         <div class="res-link-sub">¥${link.yen.toLocaleString()} · mercari</div>
       </div>
-      <div class="res-link-mxn">${fmt(mxn)}</div>
+      <div style="text-align:right">
+        <div class="res-link-mxn">${fmt(mxn)}</div>
+        ${comisionEllas>0?`<div style="font-size:10px;color:var(--muted)">base ${fmt(mxnBase)} · com ${fmt(comisionEllas)}</div>`:''}
+      </div>
     </div>`;
 
-    resumen+=`▸ ${link.nombre||'Link '+(li+1)}  ¥${link.yen.toLocaleString()} → ${fmt(mxn)}\n`;
+    resumen+=`▸ ${link.nombre||'Link '+(li+1)}  ¥${link.yen.toLocaleString()}\n  Base: ${fmt(mxnBase)} · Comisión: ${fmt(comisionEllas)} · Venta: ${fmt(mxn)}\n`;
 
     if(divMode==='uno'){
-      resumen+=`  Precio completo: ${fmt(mxn)}\n\n`;
-      html+=`<div class="res-row">
-        <span class="res-persona" style="font-weight:500;color:var(--lav2)">precio por link</span>
-        <span class="res-precio">${fmt(mxn)}</span>
+      resumen+=`  Precio venta: ${fmt(mxn)}\n\n`;
+      html+=`<div class="res-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+        <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+          <span style="font-size:12px;color:var(--muted)">precio base</span>
+          <span style="font-size:13px;color:var(--muted)">${fmt(mxnBase)}</span>
+        </div>
+        ${comisionEllas>0?`<div style="display:flex;justify-content:space-between;width:100%;align-items:center">
+          <span style="font-size:12px;color:var(--muted)">comisión</span>
+          <span style="font-size:13px;color:var(--muted)">+${fmt(comisionEllas)}</span>
+        </div>`:''}
+        <div style="display:flex;justify-content:space-between;width:100%;align-items:center;border-top:1px solid var(--border);padding-top:6px;margin-top:2px">
+          <span style="font-size:13px;font-weight:500;color:var(--lav2)">precio de venta</span>
+          <span class="res-precio">${fmt(mxn)}</span>
+        </div>
       </div>`;
     } else if(divMode==='igual'){
       const n=parseInt(document.getElementById('n-personas').value)||7;
@@ -463,7 +476,7 @@ function calcular(){
   });
 
   if(divMode==='pct'&&links.length>1){
-    const totalMXN=links.reduce((s,l)=>s+calcMXN(l.yen),0);
+    const comR=getCom(); const totalMXN=links.reduce((s,l)=>s+calcMXN(l.yen,comR),0);
     const totBlock=document.createElement('div');
     totBlock.className='total-bloque';
     let totHTML='';
@@ -481,7 +494,7 @@ function calcular(){
     res.appendChild(totBlock);
   }
 
-  const totalFinal=links.reduce((s,l)=>s+calcMXN(l.yen),0);
+  const totalFinal=links.reduce((s,l)=>s+calcMXN(l.yen,getCom()),0);
   const totGen=document.createElement('div');
   totGen.className='total-general';
   totGen.innerHTML=`<span>total general</span><strong>${fmt(totalFinal)}</strong>`;
