@@ -209,11 +209,25 @@ main{padding:.85rem 1rem 5rem}
       <label>Link (opcional)</label>
       <input type="text" id="m-link" placeholder="https://jp.mercari.com/...">
     </div>
-    <div class="compradores-section">
-      <div class="comp-title">compradores (nombre · # orden)</div>
-      <div id="compradores-list"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div class="mfield" style="margin:0">
+        <label>Precio base MXN</label>
+        <input type="text" id="m-precio-base" readonly style="color:var(--muted);font-size:13px">
+      </div>
+      <div class="mfield" style="margin:0">
+        <label>Precio de venta MXN</label>
+        <input type="number" id="m-precio-venta" placeholder="0" min="0" step="1" inputmode="numeric" oninput="calcComision()">
+      </div>
     </div>
     <div class="mfield">
+      <label>Comisión (venta − base)</label>
+      <input type="text" id="m-comision" readonly style="color:var(--success);font-weight:500">
+    </div>
+    <div class="compradores-section">
+      <div class="comp-title" id="comp-title">compradores (nombre · # orden)</div>
+      <div id="compradores-list"></div>
+    </div>
+    <div class="mfield" id="sheets-url-field">
       <label>URL de tu Google Sheets (Web App)</label>
       <input type="text" id="sheets-url" placeholder="https://script.google.com/macros/s/...">
       <div class="sheets-url-hint">Pega aquí la URL de tu Google Apps Script. Solo se configura una vez.</div>
@@ -429,7 +443,10 @@ function calcular(){
       resumen+='\n';
     }
 
-    html+=`<button class="btn-registrar" onclick="abrirModal(${li})">📝 registrar pedido de este link</button>`;
+    html+=`<div style="display:flex;gap:6px;margin:8px 14px">
+      <button class="btn-registrar" style="margin:0;flex:1" onclick="abrirModal(${li},false)">📝 registrar compartido</button>
+      <button class="btn-registrar" style="margin:0;flex:1;background:var(--bg2);color:var(--lav2);border-color:var(--lav2)" onclick="abrirModal(${li},true)">👤 precio por link</button>
+    </div>`;
     block.innerHTML=html;
     res.appendChild(block);
   });
@@ -466,26 +483,43 @@ function calcular(){
 }
 
 // ── MODAL REGISTRO ──
-function abrirModal(li){
+function abrirModal(li, soloUna){
   const links=window._calcLinks||[];
   const link=links[li]||{};
-  modalLink={...link, mxn: calcMXN(link.yen||0), index:li};
+  const mxn=calcMXN(link.yen||0);
+  modalLink={...link, mxn, index:li, soloUna:!!soloUna};
 
   document.getElementById('m-articulo').value=link.nombre||'';
   document.getElementById('m-version').value='';
   document.getElementById('m-link').value=link.url||'';
   document.getElementById('guardar-ok').textContent='';
+  document.getElementById('m-precio-base').value=fmt(mxn);
+  document.getElementById('m-precio-venta').value='';
+  document.getElementById('m-comision').value='';
 
   const hint=document.getElementById('modal-hint');
-  hint.textContent=`${link.nombre||'Link '+(li+1)} · ¥${(link.yen||0).toLocaleString()} · ${fmt(modalLink.mxn)}`;
+  hint.textContent=`${link.nombre||'Link '+(li+1)} · ¥${(link.yen||0).toLocaleString()} · ${fmt(mxn)} base`;
+
+  // Ocultar URL a Angie y Viviana
+  document.getElementById('sheets-url-field').style.display=user==='manguita'?'block':'none';
+  const savedUrl=localStorage.getItem('sheetsUrl')||'';
+  document.getElementById('sheets-url').value=savedUrl;
 
   const compList=document.getElementById('compradores-list');
   compList.innerHTML='';
-  const n = divMode==='igual'
-    ? (parseInt(document.getElementById('n-personas').value)||7)
-    : MIEMBROS.length;
 
-  if(divMode==='igual'){
+  if(soloUna){
+    // Modo una sola compradora
+    document.getElementById('comp-title').textContent='comprador/a (nombre · # orden)';
+    const row=document.createElement('div');
+    row.className='comp-row';
+    row.innerHTML=`
+      <input type="text" placeholder="Nombre comprador/a" class="comp-nombre">
+      <input type="text" placeholder="# orden" class="comp-orden">`;
+    compList.appendChild(row);
+  } else if(divMode==='igual'){
+    document.getElementById('comp-title').textContent='compradores (nombre · # orden)';
+    const n=parseInt(document.getElementById('n-personas').value)||7;
     for(let j=0;j<n;j++){
       const row=document.createElement('div');
       row.className='comp-row';
@@ -495,20 +529,30 @@ function abrirModal(li){
       compList.appendChild(row);
     }
   } else {
+    document.getElementById('comp-title').textContent='compradores por miembro (nombre · # orden)';
+    const pcts=getPcts();
+    const sumPct=pcts.reduce((a,b)=>a+b,0)||100;
     MIEMBROS.forEach((m,i)=>{
+      const monto=mxn*(pcts[i]/sumPct);
       const row=document.createElement('div');
       row.className='comp-row';
+      row.style.gridTemplateColumns='auto 1fr 1fr';
       row.innerHTML=`
-        <input type="text" value="${m.emoji} ${m.nombre}" class="comp-nombre" readonly style="color:var(--muted)">
-        <input type="text" placeholder="# orden" class="comp-orden">`;
+        <span style="font-size:13px;padding:0 4px">${m.emoji}</span>
+        <input type="text" placeholder="${m.nombre} — nombre comprador" class="comp-nombre">
+        <input type="text" placeholder="# orden · ${fmt(monto)}" class="comp-orden">`;
       compList.appendChild(row);
     });
   }
 
-  const savedUrl=localStorage.getItem('sheetsUrl')||'';
-  document.getElementById('sheets-url').value=savedUrl;
-
   document.getElementById('modal-bg').className='modal-bg open';
+}
+
+function calcComision(){
+  const base=modalLink?modalLink.mxn:0;
+  const venta=parseFloat(document.getElementById('m-precio-venta').value)||0;
+  const com=venta-base;
+  document.getElementById('m-comision').value=com>=0?fmt(com):'—';
 }
 
 function cerrarModal(){
@@ -520,14 +564,18 @@ document.getElementById('modal-bg').addEventListener('click',function(e){
 });
 
 async function guardarPedido(){
-  const url=document.getElementById('sheets-url').value.trim();
-  if(!url){ alert('Pega la URL de tu Google Apps Script primero'); return; }
-  localStorage.setItem('sheetsUrl',url);
+  const urlGuardada=localStorage.getItem('sheetsUrl')||'';
+  const urlInput=document.getElementById('sheets-url').value.trim();
+  const url=urlInput||urlGuardada;
+  if(!url){ alert('Configura la URL de Google Sheets — contacta a Manguita'); return; }
+  if(urlInput) localStorage.setItem('sheetsUrl',urlInput);
 
   const articulo=document.getElementById('m-articulo').value.trim()||'—';
   const version=document.getElementById('m-version').value.trim()||'—';
   const linkUrl=document.getElementById('m-link').value.trim()||modalLink.url||'—';
-  const mxn=modalLink.mxn||0;
+  const precioBase=modalLink.mxn||0;
+  const precioVenta=parseFloat(document.getElementById('m-precio-venta').value)||0;
+  const comision=precioVenta>0?precioVenta-precioBase:0;
   const registradoPor=USUARIOS[user].label;
   const fecha=new Date().toLocaleDateString('es-MX');
 
@@ -537,7 +585,9 @@ async function guardarPedido(){
   const filas=nombres.map((nombre,i)=>({
     fecha, registradoPor, articulo, version,
     link: linkUrl,
-    precio: fmt(mxn),
+    precioBase: fmt(precioBase),
+    precioVenta: precioVenta>0?fmt(precioVenta):'—',
+    comision: comision>0?fmt(comision):'—',
     nombre: nombre||'—',
     orden: ordenes[i]||'—',
   }));
