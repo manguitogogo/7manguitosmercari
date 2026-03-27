@@ -568,7 +568,7 @@ function abrirModal(li){
     const pcts=getPcts();
     const sumPct=pcts.reduce((a,b)=>a+b,0)||100;
     const comBase=COM_BASE; const comTotal=getCom();
-    const comPorM=(comTotal-comBase)/MIEMBROS.length;
+    const comisionTotal=Math.round(getCom()-COM_BASE);
     // Un solo campo de orden
     const ordenRow=document.createElement('div');
     ordenRow.className='comp-row';
@@ -579,7 +579,7 @@ function abrirModal(li){
     MIEMBROS.forEach((m,i)=>{
       const montoVenta=precioVenta*(pcts[i]/sumPct);
       const montoBase=precioBase*(pcts[i]/sumPct);
-      const comM=comPorM>0?comPorM:0;
+      const comM=i===0?comisionTotal:0;
       const row=document.createElement('div');
       row.className='comp-row';
       row.style.gridTemplateColumns='auto 1fr';
